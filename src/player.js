@@ -15,8 +15,8 @@ function Player(position, canvas) {
   this.angle = 0;
   this.radius  = 64;
   this.thrusting = false;
-  this.steerLeft = false;
-  this.steerRight = false;
+  this.moveLeft = false;
+  this.moveRight = false;
   this.lives = 3;
   this.p_key = false;
   this.laser_wait = 0;
@@ -47,11 +47,11 @@ Player.prototype.buttonDown = function(event){
       break;
     case 'ArrowLeft': // LEFT
     case 'a':
-      this.steerLeft = true;
+      this.moveLeft = true;
       break;
     case 'ArrowRight': // RIGHT
     case 'd':
-      this.steerRight = true;
+      this.moveRight = true;
       break;
   }
 }
@@ -63,11 +63,11 @@ Player.prototype.buttonUp = function(event){
       break;
     case 'ArrowLeft': // LEFT
     case 'a':
-      this.steerLeft = false;
+      this.moveLeft = false;
       break;
     case 'ArrowRight': // RIGHT
     case 'd':
-      this.steerRight = false;
+      this.moveRight = false;
       break;
   }
 }
@@ -75,9 +75,9 @@ Player.prototype.buttonUp = function(event){
 //Adds the warp function
 Player.prototype.warp = function(asteroids){
   var valid = false;
+  this.moveLeft = false;
+  this.moveRight = false;
   this.thrusting = false;
-  this.steerLeft = false;
-  this.steerRight = false;
   this.velocity = {x: 0, y: 0}
   this.position = {x: Math.random()*this.W,y: Math.random()*this.H};
   for(var i = 0; i < asteroids.length; i++){
@@ -108,8 +108,8 @@ Player.prototype.restart = function() {
   this.state = 'ready';
   this.velocity = {x: 0,y: 0};
   this.thrusting = false;
-  this.steerLeft = false;
-  this.steerRight = false;
+  this.moveLeft = false;
+  this.moveRight = false;
   this.explosionFrame = 0;
   this.laser_wait = 0;
 }
@@ -120,10 +120,10 @@ Player.prototype.update = function(time) {
     case 'ready':
     case 'running':
       this.laser_wait += time;
-      if(this.steerLeft) {
+      if(this.moveLeft) {
         this.angle += time * 0.005;
       }
-      if(this.steerRight) {
+      if(this.moveRight) {
         this.angle -= 0.1;
       }
       if(this.thrusting) {

@@ -7,10 +7,10 @@ function Game(screen, updateFunction, renderFunction) {
   this.render = renderFunction;
   this.frontBuffer = screen;
   this.frontCtx = screen.getContext('2d');
-  this.backBuffer = document.createElement('canvas');
-  this.backBuffer.width = screen.width;
-  this.backBuffer.height = screen.height;
-  this.backCtx = this.backBuffer.getContext('2d');
+  this.canvas = document.createElement('canvas');
+  this.canvas.width = screen.width;
+  this.canvas.height = screen.height;
+  this.backCtx = this.canvas.getContext('2d');
   this.oldTime = performance.now();
   this.paused = false;
 }
@@ -26,5 +26,5 @@ Game.prototype.loop = function(newTime) {
   this.oldTime = newTime;
   if(!this.paused) this.update(elapsedTime);
   this.render(elapsedTime, this.frontCtx);
-  this.frontCtx.drawImage(this.backBuffer, 0, 0);
+  this.frontCtx.drawImage(this.canvas, 0, 0);
 }
