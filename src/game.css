@@ -1,0 +1,8 @@
+body {
+	text-align: center;
+	background: black;
+}
+canvas#screen {
+  border: 2px solid #333;
+  box-shadow: 4px 4px 4px #777;
+}
