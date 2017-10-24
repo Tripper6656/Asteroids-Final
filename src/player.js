@@ -1,7 +1,5 @@
-"use strict";
-
-const MS_PER_FRAME = 1000/8;
-const LASER_WAIT = 150;
+const mspf = 1000/8;
+const RLT = 150;
 const Laser = require('./laser.js');
 module.exports = exports = Player;
 
@@ -10,21 +8,21 @@ function Player(position, canvas) {
   this.canvas = canvas;
   this.W = canvas.width;
   this.H = canvas.height;
+  this.velocity = {x: 0, y: 0};
   this.position = {x: position.x, y: position.y};
-  this.velocity = {x: 0, y: 0}
+  this.color = "white";
   this.angle = 0;
   this.radius  = 64;
   this.thrusting = false;
   this.moveLeft = false;
   this.moveRight = false;
   this.lives = 3;
-  this.p_key = false;
-  this.laser_wait = 0;
+  this.pausekey = false;
+  this.reloadTime = 0;
   this.lasers = [];
-  this.color = "white";
   this.boom = new Audio('./assets/sounds/explosion.wav');
   this.explosionFrame = 0;
-  this.state = 'ready';
+  this.state = 'menu';
   this.laserSound = new Audio('./assets/sounds/laser.wav');
   this.laserSound.volume = 0.5;
 }
@@ -34,11 +32,11 @@ Player.prototype.buttonDown = function(event){
   switch(event.key) {
     case ' ':
       event.preventDefault();
-      if(this.state == 'running' && this.laser_wait >= LASER_WAIT){
+      if(this.state == 'playing' && this.reloadTime >= RLT){
         this.lasers.push(new Laser(this.position, (this.angle % (2*Math.PI) + Math.PI/2), this.canvas));
         this.laserSound.currentTime = 0;
         this.laserSound.play();
-        this.laser_wait = 0;
+        this.reloadTime = 0;
       }
       break;
     case 'ArrowUp': // UP
@@ -81,10 +79,9 @@ Player.prototype.warp = function(asteroids){
   this.velocity = {x: 0, y: 0}
   this.position = {x: Math.random()*this.W,y: Math.random()*this.H};
   for(var i = 0; i < asteroids.length; i++){
-    var dist = Math.sqrt(
-      Math.pow((this.position.x) - (asteroids[i].position.x + asteroids[i].radius), 2) +
-      Math.pow((this.position.y) - (asteroids[i].position.y + asteroids[i].radius), 2));
-    if(dist < asteroids[i].radius + 100 && asteroids[i].state == 'running') {
+    var dist = Math.sqrt(Math.pow((this.position.y) - (asteroids[i].position.y + asteroids[i].radius), 2)+
+      Math.pow((this.position.x) - (asteroids[i].position.x + asteroids[i].radius), 2));
+    if(dist < asteroids[i].radius + 100 && asteroids[i].state == 'playing') {
       this.position = {x: Math.random()*this.W,y: Math.random()*this.H};
       i = 0;
     }
@@ -93,9 +90,9 @@ Player.prototype.warp = function(asteroids){
 
 //Player Explodes
 Player.prototype.explode = function() {
-  this.lasers = [];
+  this.state = 'death';
   this.lives--;
-  this.state = 'exploding';
+  this.lasers = [];
   this.boom.currentTime = 0;
   this.boom.play();
 }
@@ -105,21 +102,21 @@ Player.prototype.restart = function() {
   this.lasers = [];
   this.angle = 0;
   this.position = {x: this.W/2, y: this.H/2};
-  this.state = 'ready';
+  this.state = 'menu';
   this.velocity = {x: 0,y: 0};
   this.thrusting = false;
   this.moveLeft = false;
   this.moveRight = false;
   this.explosionFrame = 0;
-  this.laser_wait = 0;
+  this.reloadTime = 0;
 }
 
 //Updates Player
 Player.prototype.update = function(time) {
   switch(this.state){
-    case 'ready':
-    case 'running':
-      this.laser_wait += time;
+    case 'menu':
+    case 'playing':
+      this.reloadTime += time;
       if(this.moveLeft) {
         this.angle += time * 0.005;
       }
@@ -127,10 +124,7 @@ Player.prototype.update = function(time) {
         this.angle -= 0.1;
       }
       if(this.thrusting) {
-        var acceleration = {
-          x: Math.sin(this.angle),
-          y: Math.cos(this.angle)
-        }
+        var acceleration = {x: Math.sin(this.angle), y: Math.cos(this.angle)}
         this.velocity.x -= acceleration.x * 0.25;
         this.velocity.y -= acceleration.y * 0.25;
       }
@@ -147,7 +141,7 @@ Player.prototype.update = function(time) {
         }
       }
       break;
-    case 'exploding':
+    case 'death':
       this.explosionFrame++;
       if(this.explosionFrame >= 16){
         this.state = 'dead';
@@ -160,7 +154,7 @@ Player.prototype.update = function(time) {
 
 //Renders Player
 Player.prototype.render = function(time, ctx) {
-  if(this.state == 'running' || this.state == 'ready'){
+  if(this.state == 'playing' || this.state == 'menu'){
     ctx.save();
     for(var i = 0; i < this.lasers.length; i++){
       this.lasers[i].render(time, ctx);

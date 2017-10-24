@@ -1,5 +1,3 @@
-"use strict";
-
 const mspf = 1000/8;
 const lspeed = 20;
 module.exports = exports = Laser;
@@ -19,8 +17,7 @@ function Laser(position, angle, canvas) {
 Laser.prototype.update = function(time) {
   this.position.x += this.velocity.x * lspeed;
   this.position.y -= this.velocity.y * lspeed;
-  if(this.position.x < 0 || this.position.x > this.W ||
-     this.position.y < 0 || this.position.y > this.H){
+  if(this.position.x < 0 || this.position.x > this.W ||this.position.y < 0 || this.position.y > this.H){
     this.remove = true;;
   }
 }

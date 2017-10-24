@@ -1,4 +1,3 @@
-"use strict";
 module.exports = exports = Game;
 
 //Creates Game
@@ -20,11 +19,11 @@ Game.prototype.pause = function(flag) {
   this.paused = (flag == true);
 }
 
-Game.prototype.loop = function(newTime) {
+Game.prototype.loop = function(T) {
   var game = this;
-  var elapsedTime = newTime - this.oldTime;
-  this.oldTime = newTime;
-  if(!this.paused) this.update(elapsedTime);
-  this.render(elapsedTime, this.frontCtx);
+  var time = T - this.oldTime;
+  this.oldTime = T;
+  if(!this.paused) this.update(time);
+  this.render(time, this.frontCtx);
   this.frontCtx.drawImage(this.canvas, 0, 0);
 }

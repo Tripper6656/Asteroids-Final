@@ -1,17 +1,15 @@
-"use strict";
-
-const MS_PER_FRAME = 1000/8;
-const COLL_MIN = 1000;
+const mspf = 1000/8;
+const minCollision = 1000;
 module.exports = exports = Asteroid;
 var boom = new Audio('assets/sounds/explosion.wav');
 boom.playbackRate = 3;
   
 //Creates Asteroids
-function Asteroid(level, canvas, size, startPos, startVelocity, startDi) {
+function Asteroid(level, canvas, size, pos, Vel, Di) {
   this.level = level;
   this.worldWidth = canvas.width;
   this.worldHeight = canvas.height;
-  if(startDi) this.diameter = startDi;
+  if(Di) this.diameter = Di;
   else this.diameter  = Math.random() * 40 + 80;
   this.radius = this.diameter/2;
   this.mass = this.diameter / 120;
@@ -20,10 +18,10 @@ function Asteroid(level, canvas, size, startPos, startVelocity, startDi) {
   this.state = 'default';
   this.explosionFrame = 0;
   this.remove = false;
-  this.collisionCounter = COLL_MIN;
+  this.collisionCounter = minCollision;
   
-  if(startPos){
-    this.position = {x: startPos.x + 5, y: startPos.y + 5};
+  if(pos){
+    this.position = {x: pos.x + 5, y: pos.y + 5};
   }
   else{
     do{
@@ -35,18 +33,15 @@ function Asteroid(level, canvas, size, startPos, startVelocity, startDi) {
             && this.position.y > canvas.height/2 - 150 && this.position.y < canvas.height/2 + 50)
   }
 
-  if(startVelocity){
-    this.velocity = startVelocity;
+  if(Vel){
+    this.velocity = Vel;
   }
   else{
     var tempX = Math.random() + 0.5*(this.level-1);
     var tempY = Math.random() + 0.5*(this.level-1);
     if(Math.random() > 0.5) tempX *= -1;
     if(Math.random() > 0.5) tempY *= -1;
-    this.velocity = {
-      x: tempX,
-      y: tempY
-    };
+    this.velocity = {x: tempX,y: tempY};
   }
   this.count = 0;
   this.angle = Math.random() * 2 * Math.PI;
@@ -55,7 +50,7 @@ function Asteroid(level, canvas, size, startPos, startVelocity, startDi) {
 
 //Asteroid hit
 Asteroid.prototype.struck = function(asteroids) {
-  this.state = 'exploding';
+  this.state = 'death';
   boom.currentTime = 0;
   boom.play();
   if(this.size > 1){
@@ -71,7 +66,7 @@ Asteroid.prototype.struck = function(asteroids) {
 
 //Asteroids bump into each other
 Asteroid.prototype.collide = function(asteroids) {
-  this.collisionCounter = COLL_MIN;
+  this.collisionCounter = minCollision;
 }
 
 
@@ -87,7 +82,7 @@ Asteroid.prototype.update = function(time) {
     if(this.position.y < -1 * this.diameter) this.position.y = this.worldHeight;
     if(this.position.y > this.worldHeight) this.position.y = -1 * this.diameter;
   }
-  else if(this.state == 'exploding'){
+  else if(this.state == 'death'){
     if(this.explosionFrame < 16)
       this.explosionFrame ++;
     else
@@ -106,7 +101,7 @@ Asteroid.prototype.render = function(time, ctx) {
 	ctx.fill();
     ctx.restore();
   }
-  else if(this.state == 'exploding'){
+  else if(this.state == 'death'){
     ctx.strokeStyle = "#ff0000";
 	ctx.beginPath(); 
     ctx.moveTo(this.position.x + 5*this.size,this.position.y + 5*this.size);
